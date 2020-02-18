@@ -1,9 +1,7 @@
 import numpy as np
-from matplotlib import pyplot as plt
 from skimage.filters import (gaussian, threshold_isodata,threshold_li,
                              threshold_mean, threshold_minimum, threshold_otsu,
                              threshold_triangle, threshold_yen)
-from skimage.morphology import remove_small_objects
 from skimage.feature import (corner_harris, corner_subpix, corner_peaks)
 from skimage.exposure import rescale_intensity
 from skimage.transform import warp, EuclideanTransform
@@ -12,8 +10,8 @@ from skimage.transform import warp, EuclideanTransform
 # EuclideanTransform: no scaling
 from skimage.measure import ransac
 from skimage.util import img_as_uint
-import os
-from skimage import io
+from skimage.morphology import remove_small_objects
+
 
 # Alignment part based on: https://scikit-image.org/docs/dev/auto_examples/transform/plot_matching.html#sphx-glr-auto-examples-transform-plot-matching-py
 
@@ -72,7 +70,7 @@ def match_corner(corner, corners_off, img_ref, img_off, window_ext=25):
     return corners_off[min_idx]
 
 
-def find_correspondences(img_ref, img_off):
+def find_correspondences(img_ref, img_off, corners_ref):
     corners_off = find_corners(img_off)
     print("Finding correspondences...")
     src = []
@@ -85,9 +83,9 @@ def find_correspondences(img_ref, img_off):
     return src, dst
 
 
-def estimate_model(img_ref, img_off, initial_thr=0.2, min_inliers=5, max_inliers=10):
+def estimate_model(img_ref, img_off, corners_ref, initial_thr=0.2, min_inliers=4, max_inliers=8):
     # Find matching corners
-    src, dst = find_correspondences(img_ref, img_off)
+    src, dst = find_correspondences(img_ref, img_off, corners_ref)
     # ransac expects (column, row) instead of (row, column)
     src = np.flip(src, axis=1)
     dst = np.flip(dst, axis=1)
@@ -124,14 +122,14 @@ def estimate_model(img_ref, img_off, initial_thr=0.2, min_inliers=5, max_inliers
     print("Estimating final model...")
     model_robust, inliers = ransac((src, dst), EuclideanTransform, min_samples=3,
                                    residual_threshold=res_thr, max_trials=300000)
-    print("Number of inliers found:", sum(inliers))
+    #print("Number of inliers found:", sum(inliers))
     print("Translation:", np.round(model_robust.translation, 5))
     print("Rotation:", np.round(model_robust.rotation, 5))
     return model_robust
     
 
-def align_offset_image(img_ref, img_off):
-    model_robust = estimate_model(img_ref, img_off)
+def align_offset_image(img_ref, corners_ref, img_off):
+    model_robust = estimate_model(img_ref, img_off, corners_ref)
     print("Applying model to offset image...")
     img_off_warped = np.zeros(np.shape(img_off))
     for channel in range(0, img_off.shape[2]):
@@ -139,7 +137,6 @@ def align_offset_image(img_ref, img_off):
     # Turn warped img into uint16
     img_off_warped = img_as_uint(img_off_warped)
     return img_off_warped
-
 
 def crop(img, borders):
     img_cropped = img[borders[0]:borders[1]+1, borders[2]:borders[3]+1]
@@ -169,14 +166,9 @@ def find_organoid_region(img, excess=200, remove_size=5000):
     return borders, img_cropped
 
 def correlation(images):
-#    img_ref = images[0]
-#    indices = np.random.choice(img_ref[...,2].size, 
-#                               size=int(img_ref[...,2].size/10),
-#                               replace=False)
-    # Get DAPI values for the random pixels
+    # Get DAPI values for all pixesl
     img_vals = []
     for image in images:
-        #img_vals.append(np.take(image[...,2].flatten(), indices))
         img_vals.append(image[...,2].flatten())
     img_vals = np.asarray(img_vals)
     
@@ -214,52 +206,6 @@ def binary_similarity(images, thr_function=threshold_otsu):
             bin_mat[i, j] = bin_mat[j, i] = ratio
     
     return bin_mat, binary_images
-    
-########## 
 
-#todo: user input to load images
-
-original_images = [img_ref, img_off_1, img_off_2, img_off_3]
-
-# Put offset images into list
-offset_images = [img_off_1, img_off_2, img_off_3]
-
-# Find corner coordinates for the reference image
-print("Find corners in reference image...")
-corners_ref = find_corners(img_ref)
-
-# Align offset images to reference image
-aligned_images = []
-for image in offset_images:
-    print("Aligning offset image", len(aligned_images)+1, "of", len(offset_images))
-    aligned_images.append(align_offset_image(img_ref, image))
-    
-# Find organoid region and crop reference image
-region_borders, img_ref_cropped = find_organoid_region(img_ref)
-
-# Crop offset images
-cropped_images = [img_ref_cropped]
-for image in aligned_images:
-    cropped_images.append(crop(image, region_borders))
-
-#cropped_images = [cropped_images_0000, cropped_images_0001, cropped_images_0002, cropped_images_0003]
-
-# Calculate correlation coefficients
-corr_matrix = correlation(cropped_images)
-print("Correlation matrix: \n", corr_matrix)
-
-# Calculate similarity of binary images
-bin_matrix, binary_images = binary_similarity(cropped_images)
-print("Ratio of identical pixels in binary images: \n", bin_matrix)
-
-fig, axes = plt.subplots(nrows=1, ncols=len(binary_images))
-for i in range(len(binary_images)):
-    axes[i].imshow(binary_images[i])
-
-    
-from skimage.util import compare_images
-plt.imshow(compare_images(cropped_images[1][...,2], cropped_images[3][...,2], method="checkerboard"))
-    
-    
-    
-    
+if __name__ == "__main__":
+    print("Only used as module")
