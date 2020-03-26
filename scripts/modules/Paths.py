@@ -1,7 +1,8 @@
-#paths
+
 project_name = 'Organoid-Image-Analysis'
 
-base_path = "/home/pwahle/Organoid-Image-Analysis"
+#paths
+base_path = "/home/pwahle/Organoid-Image-Analysis" #hopefully this will remain the only place with <username>, exchange accordningly
 
 images_path = "/links/groups/treutlein/DATA/imaging/PW/4i"
 
@@ -13,11 +14,11 @@ functions_path = scripts_path + '/functions'
 
 accessory_data_path = scripts_path + '/accessory_data'
 
-results_path = base_path + '/resullts'
+results_path = base_path + '/results'
 
 interim_results_path = base_path + '/interim_results'
 
-images_pw_path = "/home/pwahle/images"
+images_pw_path = "/home/pwahle/images" #this is only for pw
 
 def stitched_images_path(plate = '/plate6', cycle = '/cycle1'):
     return images_path + plate + cycle + "/stitched"
