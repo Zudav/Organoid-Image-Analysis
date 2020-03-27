@@ -2,3 +2,8 @@ Alignment_ref: 1
 no_cycles: 20
 no_tiles: 25
     
+PW:
+    test:
+        - weferfg
+        - rfbrb
+        
