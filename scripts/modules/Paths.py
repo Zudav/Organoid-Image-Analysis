@@ -4,6 +4,8 @@ project_name = 'Organoid-Image-Analysis'
 #paths
 base_path = "/home/pwahle/Organoid-Image-Analysis" #hopefully this will remain the only place with <username>, exchange accordningly
 
+scripts_path = base_path + '/scripts'
+
 images_path = "/links/groups/treutlein/DATA/imaging/PW/4i"
 
 modules_path = base_path + '/modules'
