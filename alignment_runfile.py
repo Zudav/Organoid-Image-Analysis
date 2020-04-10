@@ -32,7 +32,7 @@ for organoid in organoids:
         aligned_images.append(al.align_offset_image(img_ref, corners_ref, image))
         
     # Find organoid region and crop reference image
-    region_borders, img_ref_cropped = al.find_organoid_region(img_ref)
+    region_borders, img_ref_cropped = al.find_nonempty_region(img_ref, crop_image=True)
     
     # Crop offset images
     # Add already cropped reference image to the list and append the others
@@ -45,7 +45,7 @@ for organoid in organoids:
     #print("Correlation matrix: \n", corr_matrix)
     
     # Calculate similarity of binary images
-    bin_matrix, binary_images = al.binary_similarity(cropped_images)
+    bin_matrix = al.binary_similarity(cropped_images, return_images=False)
     #print("Ratio of identical pixels in binary images: \n", bin_matrix)
     
     # Save images and information
@@ -54,16 +54,6 @@ for organoid in organoids:
                    corr_matrix, bin_matrix,
                    overwrite=False)
     
-#    # Plot binary images used for calculating the bin_matrix
-#    fig, axes = plt.subplots(nrows=1, ncols=len(binary_images))
-#    for i in range(len(binary_images)):
-#        axes[i].imshow(binary_images[i])
-#
-#    # Plot cropped images
-#    for image in cropped_images:
-#        plt.figure()
-#        plt.imshow(image[...,2])
-#     
 #    # Compare two images directly
 #    from skimage.util import compare_images
 #    plt.imshow(compare_images(cropped_images[0][...,2], cropped_images[1][...,2], method="checkerboard"))

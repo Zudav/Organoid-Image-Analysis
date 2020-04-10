@@ -183,7 +183,7 @@ def save_images(path, organoid, cycles, cropped_images, corr_matrix, bin_matrix,
     info.close()
 
 if __name__ == "__main__":
-    define_organoids()
+    masterfolder, relevant_cycles, relevant_files = define_organoids()
 
 
 

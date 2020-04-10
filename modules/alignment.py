@@ -121,7 +121,7 @@ def estimate_model(img_ref, img_off, corners_ref, initial_thr=0.2, min_inliers=4
     # Estimate final model
     print("Estimating final model...")
     model_robust, inliers = ransac((src, dst), EuclideanTransform, min_samples=3,
-                                   residual_threshold=res_thr, max_trials=300000)
+                                   residual_threshold=res_thr, max_trials=500000)
     #print("Number of inliers found:", sum(inliers))
     print("Translation:", np.round(model_robust.translation, 5))
     print("Rotation:", np.round(model_robust.rotation, 5))
@@ -138,12 +138,13 @@ def align_offset_image(img_ref, corners_ref, img_off):
     img_off_warped = img_as_uint(img_off_warped)
     return img_off_warped
 
+
 def crop(img, borders):
     img_cropped = img[borders[0]:borders[1]+1, borders[2]:borders[3]+1]
     return img_cropped
 
 
-def find_organoid_region(img, excess=200, remove_size=5000):
+def find_nonempty_region(img, excess=200, remove_size=5000, crop_image=True):
     print("Determining organoid region...")
     # extract DAPI channel
     img_dapi = img[..., 2]
@@ -161,9 +162,13 @@ def find_organoid_region(img, excess=200, remove_size=5000):
                max(non_empty_rows)+excess,
                min(non_empty_columns)-excess, 
                max(non_empty_columns)+excess)
-    # crop reference image
-    img_cropped = crop(img, borders)
-    return borders, img_cropped
+    # crop image if wanted
+    if crop_image:
+            img_cropped = crop(img, borders)
+            return borders, img_cropped
+    else:
+        return borders
+
 
 def correlation(images):
     # Get DAPI values for all pixesl
@@ -181,7 +186,7 @@ def correlation(images):
     return corr_mat
 
 
-def binary_similarity(images, thr_function=threshold_otsu):
+def binary_similarity(images, thr_function=threshold_otsu, return_images=False):
     # Binarize images
     binary_images = []
     for img in images:
@@ -205,7 +210,12 @@ def binary_similarity(images, thr_function=threshold_otsu):
             ratio = np.sum(xnor_mat)/total_size
             bin_mat[i, j] = bin_mat[j, i] = ratio
     
-    return bin_mat, binary_images
+    # Return binary images if wanted
+    if return_images:
+        return bin_mat, binary_images
+    else:
+        return bin_mat
+
 
 if __name__ == "__main__":
     print("Only used as module")
