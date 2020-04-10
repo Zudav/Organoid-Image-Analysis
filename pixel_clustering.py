@@ -35,8 +35,9 @@ def get_grid(img, grid_size, multichannel=True):
     return grid
 
 print("Load images...")
-image_path = r"C:\Users\noser\polybox\ETH\Master\Research Project II\AlignedOrganoids\Organoid01"
-organoid_files = fnmatch.filter(os.listdir(image_path), "*.tif")
+# For now doing this manually
+image_path = r"/links/groups/treutlein/DATA/imaging/PW/4i/plate6/AlignedOrganoid/MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD/cycles"
+organoid_files = fnmatch.filter(os.listdir(image_path), "*.tif") # just load all the .tif files
 # Move reference cycle to first position. In this case I just know it's cycle3 but for the future
 # I'll have to figure out how to automate this
 organoid_files.insert(0, organoid_files.pop(organoid_files.index("cycle3_aligned.tif")))
@@ -158,6 +159,7 @@ som_nodes_flat = np.reshape(som_nodes, (som_size*som_size, nchan))
 
 #plt.plot(neigh_to_check, mcu_detected)
 
+# Uncomment the above chunk to find the best neighbrouhood value. I just chose 70 below because this results in about 10 clusters
 neigh_selected = 70
 cluster_labels_som_flat = phenograph.cluster(som_nodes_flat, neigh_selected)[0]
 # Get a 2D representation of all the cluster labels where each node is assigned its cluster

@@ -145,7 +145,7 @@ def save_images(path, organoid, cycles, cropped_images, corr_matrix, bin_matrix,
     # Remove the .tif file extension
     organoid = organoid.replace(".tif", "")
     # Check if a folder with the organoid name already exists
-    organoid_folder = os.path.join(alignment_folder, organoid)
+    organoid_folder = os.path.join(alignment_folder, organoid, "cycles")
     if not os.path.exists(organoid_folder):
         os.makedirs(organoid_folder)
     else:
@@ -157,7 +157,7 @@ def save_images(path, organoid, cycles, cropped_images, corr_matrix, bin_matrix,
             i = 1
             while True:
                 # Create a new folder with the same name and a number at the end
-                organoid_folder = os.path.join(alignment_folder, organoid+"_"+str(i))
+                organoid_folder = os.path.join(alignment_folder, organoid+"_"+str(i), "cycles")
                 if not os.path.exists(organoid_folder):
                     os.makedirs(organoid_folder)
                     break
