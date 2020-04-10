@@ -1,12 +1,12 @@
 import numpy as np
 
-def scale_image(image):
+def scale_image(image, percentile = 5):
     
-    if image.min() > 0:
-        return np.interp(image, (np.percentile(image,5), np.percentile(image,95)), (0, +65535))
+    #if image.min() > 0:
+        return np.interp(image, (np.percentile(image,percentile), np.percentile(image,100 - percentile)), (0, +65535))
      
-    else:
-        return np.interp(image, (np.unique(np.sort(np.ravel(image)))[1], np.unique(np.sort(np.ravel(image)))[-1]), (0, +65535))
+    #else:
+        #return np.interp(image, (np.unique(np.sort(np.ravel(image)))[1], np.unique(np.sort(np.ravel(image)))[-1]), (0, +65535))
 
 import skimage
 from skimage.filters import threshold_otsu
@@ -15,8 +15,15 @@ def subtract_membrane(dapi, membrane):
     dapi = scale_image(dapi)
     membrane = scale_image(membrane)
     tmp = dapi - membrane
+    tmp[tmp < 0] = 0
     thresh = threshold_otsu(tmp)
     tmp[tmp < thresh] = 0
+
+    '''dapi = scale_image(dapi)
+    membrane = scale_image(membrane)
+    tmp = dapi - membrane
+    thresh = threshold_otsu(tmp)
+    tmp[tmp < thresh] = 0'''
     return scale_image(tmp)
 
 
@@ -38,14 +45,15 @@ from skimage import filters
 import os
 import Paths
 from skimage import io
+import imageio
 
 def initial_segment(dapi, membrane):
     
-    if os.path.isfile(Paths.aligned_images_path() + "/MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD/dapi_mask.tif"):
+    #if os.path.isfile(Paths.aligned_images_path() + "/MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD/dapi_mask.tif"):
         
-        return io.imread(Paths.aligned_images_path() + "/MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD" + "/dapi_mask.tif")
+        #return io.imread(Paths.aligned_images_path() + "/MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD" + "/dapi_mask.tif")
     
-    else:
+    #else:
         
         subtracted = subtract_membrane(dapi, membrane)
     
@@ -61,8 +69,8 @@ def initial_segment(dapi, membrane):
         large_clusters = summary_hist[1][np.nonzero(summary_hist[0] > 500)]
         mask2 = np.isin(labels, large_clusters)
         labels[mask2 == False] = 0
-        imageio.imwrite(os.path.join(Paths.aligned_images_path(), 'MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD', 'dapi_mask.tif') , large_clusters)
-        return large_clusters
+        #imageio.imwrite(os.path.join(Paths.aligned_images_path(), 'MAX_Time00000_Point0000_Point00{ii}_ChannelSCF_SD', 'dapi_mask_new.tif') , large_clusters)
+        return labels
     
         
 
