@@ -14,7 +14,7 @@ integration_path = scripts_path + '/integration'
 
 functions_path = scripts_path + '/functions'
 
-accessory_data_path = scripts_path + '/accessory_data'
+accessory_data_path = base_path + '/Accessory_data'
 
 results_path = base_path + '/results'
 

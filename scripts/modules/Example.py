@@ -31,8 +31,8 @@ from skimage.filters import threshold_niblack, threshold_local
 import copy
 from scipy import ndimage as ndi
 
-def threshold(image, filter = threshold_niblack):
-    niblack = filter(image)
+def threshold(image, filter = threshold_local):
+    niblack = filter(image, block_size = 29)
     niblack_copy = copy.deepcopy(image)
     niblack_copy[niblack_copy < niblack] = 0
     tmp = threshold_otsu(niblack_copy)
