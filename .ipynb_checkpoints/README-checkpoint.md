@@ -1,3 +1,0 @@
-# Organoid Image Analysis
-
-Description coming soon...
